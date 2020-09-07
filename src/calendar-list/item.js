@@ -88,6 +88,7 @@ class CalendarListItem extends Component {
           customHeader={this.props.customHeader}
           renderHeader={this.props.renderHeader}
           disableAllTouchEventsForDisabledDays={this.props.disableAllTouchEventsForDisabledDays}
+          locale={this.props.locale}
         />
       );
     } else {

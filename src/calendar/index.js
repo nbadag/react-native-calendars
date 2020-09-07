@@ -15,6 +15,7 @@ import CalendarHeader from './header';
 import shouldComponentUpdate from './updater';
 import GestureRecognizer, {swipeDirections} from 'react-native-swipe-gestures';
 import {SELECT_DATE_SLOT} from '../testIDs';
+import signs from '../lib/zodiac'
 
 //Fallback for react-native-web or when RN version is < 0.44
 const {View, ViewPropTypes} = ReactNative;
@@ -110,10 +111,30 @@ class Calendar extends Component {
   constructor(props) {
     super(props);
 
+    let currentMonth = props.current || XDate()
+
+    // @todo: genericize this
+    if (props.locale === 'zodiac') {
+      XDate.locales.zodiac = {
+        ...XDate.locales[''],
+        monthNames: Object.keys(signs).map(s => s.charAt(0).toUpperCase() + s.slice(1)),
+        monthNamesShort: Object.keys(signs).map(s => s.charAt(0).toUpperCase() + s.slice(1)),
+      }
+
+      XDate.defaultLocale = 'zodiac'
+
+      const now = props.current || new Date(Date.now())
+      const year = now.getFullYear()
+      const month = now.getMonth() - 1 >= 0
+        ? now.getMonth()
+        : 12
+      const day = now.getDate()
+
+      currentMonth = new XDate(year, month, day, 0, 0, 0, true)
+    }
+
     this.style = styleConstructor(this.props.theme);
-    this.state = {
-      currentMonth: props.current ? parseDate(props.current) : XDate()
-    };
+    this.state = { currentMonth };
 
     this.updateMonth = this.updateMonth.bind(this);
     this.pressDay = this.pressDay.bind(this);
@@ -342,9 +363,9 @@ class Calendar extends Component {
 
   render() {
     const {currentMonth} = this.state;
-    const {firstDay, showSixWeeks, hideExtraDays, enableSwipeMonths} = this.props;
+    const {firstDay, showSixWeeks, hideExtraDays, enableSwipeMonths, locale} = this.props;
     const shouldShowSixWeeks = showSixWeeks && !hideExtraDays;
-    const days = dateutils.page(currentMonth, firstDay, shouldShowSixWeeks);
+    const days = dateutils.page(currentMonth, firstDay, shouldShowSixWeeks, locale);
 
     const weeks = [];
     while (days.length) {

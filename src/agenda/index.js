@@ -420,7 +420,11 @@ export default class AgendaView extends Component {
         </View>
       );
     }
-    const shouldHideExtraDays = this.state.calendarScrollable ? this.props.hideExtraDays : false;
+    const shouldHideExtraDays = this.props.locale === 'zodiac'
+      ? false
+      : this.state.calendarScrollable
+        ? this.props.hideExtraDays
+        : false;
 
     return (
       <View testID={this.props.testID} onLayout={this.onLayout} style={[this.props.style, {flex: 1, overflow: 'hidden'}]}>
@@ -454,6 +458,8 @@ export default class AgendaView extends Component {
               disabledByDefault={this.props.disabledByDefault}
               displayLoadingIndicator={this.props.displayLoadingIndicator}
               showWeekNumbers={this.props.showWeekNumbers}
+              locale={this.props.locale}
+              theme={this.props.theme}
             />
           </Animated.View>
           {knob}

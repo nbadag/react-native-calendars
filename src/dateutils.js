@@ -1,11 +1,14 @@
 const XDate = require('xdate');
+const signs = require('./lib/zodiac').default;
 
+// @todo?
 function sameMonth(a, b) {
   return a instanceof XDate && b instanceof XDate &&
     a.getFullYear() === b.getFullYear() &&
     a.getMonth() === b.getMonth();
 }
 
+// @todo?
 function sameDate(a, b) {
   return a instanceof XDate && b instanceof XDate &&
     a.getFullYear() === b.getFullYear() &&
@@ -40,6 +43,33 @@ function month(xd) {
   return fromTo(firstDay, lastDay);
 }
 
+function sign(xd) {
+  const signNames = Object.keys(signs)
+  let sign
+
+  for (let s = 0; s < Object.keys(signs).length; s++) {
+    const month = xd.getMonth() + 1
+    const date = xd.getDate()
+
+    const start = signs[signNames[s]].start
+    const end = signs[signNames[s]].end
+
+    if (
+      (month === start.month && date >= start.day)
+      ||
+      (month === end.month && date <= end.day)
+    ) {
+      sign = signs[signNames[s]]
+    }
+  }
+
+  const year = xd.getFullYear()
+  const firstDay = new XDate(sign.start.month === 12 ? year - 1 : year, sign.start.month - 1, sign.start.day, 0, 0, 0, true)
+  const lastDay = new XDate(year, sign.end.month - 1, sign.end.day, 0, 0, 0, true)
+
+  return fromTo(firstDay, lastDay)
+}
+
 function weekDayNames(firstDayOfWeek = 0) {
   let weekDaysNames = XDate.locales[XDate.defaultLocale].dayNamesShort;
   const dayShift = firstDayOfWeek % 7;
@@ -49,8 +79,9 @@ function weekDayNames(firstDayOfWeek = 0) {
   return weekDaysNames;
 }
 
-function page(xd, firstDayOfWeek, showSixWeeks) {
-  const days = month(xd);
+function page(xd, firstDayOfWeek, showSixWeeks, locale) {
+  const days = locale === 'zodiac' ? sign(xd) : month(xd);
+
   let before = [], after = [];
 
   const fdow = ((7 + firstDayOfWeek) % 7) || 7;
@@ -92,6 +123,7 @@ module.exports = {
   weekDayNames,
   sameMonth,
   sameDate,
+  sign,
   month,
   page,
   fromTo,

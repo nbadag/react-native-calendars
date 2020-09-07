@@ -10,6 +10,7 @@ import Calendar from '../calendar';
 import CalendarListItem from './item';
 import CalendarHeader from '../calendar/header/index';
 import {STATIC_HEADER} from '../testIDs';
+import signs from '../lib/zodiac'
 
 
 const {width} = Dimensions.get('window');
@@ -70,6 +71,28 @@ class CalendarList extends Component {
   constructor(props) {
     super(props);
 
+    let date = XDate()
+
+    // @todo: genericize this
+    if (props.locale === 'zodiac') {
+      XDate.locales.zodiac = {
+        ...XDate.locales[''],
+        monthNames: Object.keys(signs).map(s => s.charAt(0).toUpperCase() + s.slice(1)),
+        monthNamesShort: Object.keys(signs).map(s => s.charAt(0).toUpperCase() + s.slice(1)),
+      }
+
+      XDate.defaultLocale = 'zodiac'
+
+      const now = new Date(Date.now())
+      const year = now.getFullYear()
+      const month = now.getMonth() - 1 >= 0
+        ? now.getMonth()
+        : 12
+      const day = now.getDate()
+
+      date = new XDate(year, month, day, 0, 0, 0, true)
+    }
+
     this.style = styleConstructor(props.theme);
 
     this.viewabilityConfig = {
@@ -78,7 +101,6 @@ class CalendarList extends Component {
 
     const rows = [];
     const texts = [];
-    const date = parseDate(props.current) || XDate();
 
     for (let i = 0; i <= this.props.pastScrollRange + this.props.futureScrollRange; i++) {
       const rangeDate = date.clone().addMonths(i - this.props.pastScrollRange, true);
@@ -122,15 +144,18 @@ class CalendarList extends Component {
 
     if (!this.props.horizontal) {
       let week = 0;
-      const days = dateutils.page(day, this.props.firstDay);
+      const days = this.props.locale === 'zodiac' ? dateutils.sign(day) : dateutils.page(day, this.props.firstDay);
+
       for (let i = 0; i < days.length; i++) {
         week = Math.floor(i / 7);
+
         if (dateutils.sameDate(days[i], day)) {
           scrollAmount += 46 * week;
           break;
         }
       }
     }
+
     this.listView.scrollToOffset({offset: scrollAmount, animated});
   }
 
@@ -208,6 +233,31 @@ class CalendarList extends Component {
   }
 
   renderCalendar({item}) {
+    let firstDay
+
+    if (this.props.locale === 'zodiac') {
+      let year
+      let month
+      let day
+
+      if (typeof item === 'string') {
+        const text = item.split(' ')
+        const signName = text[0].toLowerCase()
+
+        year = parseInt(text[1])
+        month = signs[signName].start.month
+        day = signs[signName].start.day
+      } else {
+        const sign = dateutils.sign(item)
+
+        year = sign[0].getFullYear()
+        month = sign[0].getMonth()
+        day = sign[0].getDate()
+      }
+
+      firstDay = new XDate(year, month, day, 0, 0, 0, true)
+    }
+
     return (
       <CalendarListItem
         testID={`${this.props.testID}_${item}`}
@@ -215,6 +265,7 @@ class CalendarList extends Component {
         item={item}
         calendarHeight={this.props.calendarHeight}
         calendarWidth={this.props.horizontal ? this.props.calendarWidth : undefined}
+        hideExtraDays={!this.props.locale === 'zodiac'}
         {...this.props}
         style={this.props.calendarStyle}
       />
