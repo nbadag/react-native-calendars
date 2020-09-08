@@ -38,7 +38,6 @@ function sameSign(a, b) {
   }
 
   return a instanceof XDate && b instanceof XDate &&
-    a.getFullYear() === b.getFullYear() &&
     aSign === bSign
 }
 

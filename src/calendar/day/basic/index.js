@@ -65,7 +65,9 @@ class Day extends Component {
       disableTouchEvent
     } = marking;
 
-    if (selected) {
+    const isSelected = this.props.locale === 'zodiac' ? selected && !isDisabled : selected
+
+    if (isSelected) {
       containerStyle.push(this.style.selected);
       textStyle.push(this.style.selectedText);
 
@@ -107,7 +109,7 @@ class Day extends Component {
           theme={theme}
           isMarked={marked}
           dotColor={dotColor}
-          isSelected={selected}
+          isSelected={isSelected}
           isToday={isToday}
           isDisabled={isDisabled}
         />

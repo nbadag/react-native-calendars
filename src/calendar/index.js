@@ -188,7 +188,21 @@ class Calendar extends Component {
     this.updateMonth(this.state.currentMonth.clone().addMonths(count, true));
   }
 
-  isDateNotInTheRange = (minDate, maxDate, date) => {
+  isDateNotInTheRange = (rawMinDate, maxDate, date, locale) => {
+    let minDate = locale === 'zodiac' ? null : rawMinDate
+
+    if (
+      locale === 'zodiac'
+      &&
+      rawMinDate.getMonth() === 11
+      &&
+      date.getMonth() === 11
+      &&
+      date.getFullYear() === maxDate.getFullYear()
+    ) {
+      date.setFullYear(date.getFullYear() - 1)
+    }
+
     return (minDate && !dateutils.isGTE(date, minDate)) || (maxDate && !dateutils.isLTE(date, maxDate));
   }
 
@@ -209,6 +223,7 @@ class Calendar extends Component {
   renderDay(day, id) {
     let minDate
     let maxDate
+    const days = dateutils.sign(day)
 
     if (this.props.locale === 'zodiac') {
       const days = dateutils.sign(day)
@@ -222,12 +237,24 @@ class Calendar extends Component {
 
     let state = '';
     if (this.props.disabledByDefault) {
+      // if (day.getMonth() === 11) {
+      //   console.log(day, 'disabled-1')
+      // }
       state = 'disabled';
-    } else if (this.isDateNotInTheRange(minDate, maxDate, day)) {
+    } else if (this.isDateNotInTheRange(minDate, maxDate, day, this.props.locale)) {
+      // if (day.getMonth() === 11) {
+      //   console.log(day, 'disabled-2', minDate, maxDate, day)
+      // }
       state = 'disabled';
     } else if (this.props.locale === 'zodiac' && !dateutils.sameSign(day, this.state.currentMonth)) {
+      // if (day.getMonth() === 11) {
+      //   console.log(day, 'disabled-3', dateutils.getSignName(day), dateutils.getSignName(this.state.currentMonth))
+      // }
       state = 'disabled';
     } else if (this.props.locale !== 'zodiac' && !dateutils.sameMonth(day, this.state.currentMonth)) {
+      // if (day.getMonth() === 11) {
+      //   console.log(day, 'disabled-4')
+      // }
       state = 'disabled';
     } else if (dateutils.sameDate(day, XDate(), this.props.locale)) {
       state = 'today';
@@ -254,6 +281,7 @@ class Calendar extends Component {
           marking={this.getDateMarking(day)}
           accessibilityLabel={accessibilityLabel}
           disableAllTouchEventsForDisabledDays={this.props.disableAllTouchEventsForDisabledDays}
+          locale={this.props.locale}
         >
           {date}
         </DayComp>
@@ -404,7 +432,9 @@ class Calendar extends Component {
       style: this.props.headerStyle,
       theme: this.props.theme,
       hideArrows: this.props.hideArrows,
-      month: this.state.currentMonth,
+      month: this.props.locale === 'zodiac' && dateutils.getSignName(this.state.currentMonth) === 'capricorn' && this.state.currentMonth.getMonth() === 0
+        ? this.state.currentMonth.clone().setFullYear(this.state.currentMonth.getFullYear() - 1)
+        : this.state.currentMonth,
       addMonth: this.addMonth,
       showIndicator: indicator,
       firstDay: this.props.firstDay,
