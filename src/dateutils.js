@@ -8,12 +8,68 @@ function sameMonth(a, b) {
     a.getMonth() === b.getMonth();
 }
 
-// @todo?
-function sameDate(a, b) {
+function sameSign(a, b) {
+  const signNames = Object.keys(signs)
+  let aSign
+  let bSign
+
+  for (let i = 0; i < signNames.length; i++) {
+    const sign = signs[signNames[i]]
+
+    if (
+      ((a.getMonth() + 1) === sign.start.month && a.getDate() >= sign.start.day)
+      ||
+      ((a.getMonth() + 1) === sign.end.month && a.getDate() <= sign.end.day)
+    ) {
+      aSign = signNames[i]
+    }
+  }
+
+  for (let j = 0; j < signNames.length; j++) {
+    const sign = signs[signNames[j]]
+
+    if (
+      ((b.getMonth() + 1) === sign.start.month && b.getDate() >= sign.start.day)
+      ||
+      ((b.getMonth() + 1) === sign.end.month && b.getDate() <= sign.end.day)
+    ) {
+      bSign = signNames[j]
+    }
+  }
+
   return a instanceof XDate && b instanceof XDate &&
     a.getFullYear() === b.getFullYear() &&
-    a.getMonth() === b.getMonth() &&
+    aSign === bSign
+}
+
+// @todo?
+function sameDate(a, b, locale) {
+  const func = locale === 'zodiac'
+    ? sameSign
+    : sameMonth
+
+  return a instanceof XDate && b instanceof XDate &&
+    func(a, b) &&
     a.getDate() === b.getDate();
+}
+
+function getSignName(xd) {
+  const signNames = Object.keys(signs)
+  let signName
+
+  for (let i = 0; i < signNames.length; i++) {
+    const sign = signs[signNames[i]]
+
+    if (
+      ((xd.getMonth() + 1) === sign.start.month && xd.getDate() >= sign.start.day)
+      ||
+      ((xd.getMonth() + 1) === sign.end.month && xd.getDate() <= sign.end.day)
+    ) {
+      signName = signNames[i]
+    }
+  }
+
+  return signName
 }
 
 function isGTE(a, b) {
@@ -122,7 +178,9 @@ function page(xd, firstDayOfWeek, showSixWeeks, locale) {
 module.exports = {
   weekDayNames,
   sameMonth,
+  sameSign,
   sameDate,
+  getSignName,
   sign,
   month,
   page,

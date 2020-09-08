@@ -138,7 +138,18 @@ class CalendarList extends Component {
 
   scrollToDay(d, offset, animated) {
     const day = parseDate(d);
-    const diffMonths = Math.round(this.state.openDate.clone().setDate(1).diffMonths(day.clone().setDate(1)));
+    let diffMonths
+
+    if (this.props.locale === 'zodiac') {
+      const signNames = Object.keys(signs)
+      const openDateSignIdx = signNames.indexOf(dateutils.getSignName(this.state.openDate))
+      const targetDateSignIdx = signNames.indexOf(dateutils.getSignName(day))
+
+      diffMonths = targetDateSignIdx - openDateSignIdx
+    } else {
+      diffMonths = Math.round(this.state.openDate.clone().setDate(1).diffMonths(day.clone().setDate(1)));
+    }
+
     const size = this.props.horizontal ? this.props.calendarWidth : this.props.calendarHeight;
     let scrollAmount = (size * this.props.pastScrollRange) + (diffMonths * size) + (offset || 0);
 

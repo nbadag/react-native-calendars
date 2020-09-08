@@ -207,16 +207,29 @@ class Calendar extends Component {
 
 
   renderDay(day, id) {
-    const minDate = parseDate(this.props.minDate);
-    const maxDate = parseDate(this.props.maxDate);
+    let minDate
+    let maxDate
+
+    if (this.props.locale === 'zodiac') {
+      const days = dateutils.sign(day)
+
+      minDate = parseDate(days[0])
+      maxDate = parseDate(days[days.length - 1])
+    } else {
+      minDate = parseDate(this.props.minDate);
+      maxDate = parseDate(this.props.maxDate);
+    }
+
     let state = '';
     if (this.props.disabledByDefault) {
       state = 'disabled';
     } else if (this.isDateNotInTheRange(minDate, maxDate, day)) {
       state = 'disabled';
-    } else if (!dateutils.sameMonth(day, this.state.currentMonth)) {
+    } else if (this.props.locale === 'zodiac' && !dateutils.sameSign(day, this.state.currentMonth)) {
       state = 'disabled';
-    } else if (dateutils.sameDate(day, XDate())) {
+    } else if (this.props.locale !== 'zodiac' && !dateutils.sameMonth(day, this.state.currentMonth)) {
+      state = 'disabled';
+    } else if (dateutils.sameDate(day, XDate(), this.props.locale)) {
       state = 'today';
     }
 
