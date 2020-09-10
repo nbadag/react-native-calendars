@@ -82,6 +82,7 @@ class CalendarListItem extends Component {
           renderArrow={this.props.renderArrow}
           onPressArrowLeft={this.props.horizontal ? this.onPressArrowLeft : this.props.onPressArrowLeft}
           onPressArrowRight={this.props.horizontal ? this.onPressArrowRight : this.props.onPressArrowRight}
+          onPressCalendar={this.props.onPressCalendar}
           headerStyle={this.props.horizontal ? this.props.headerStyle : undefined}
           accessibilityElementsHidden={this.props.accessibilityElementsHidden} // iOS
           importantForAccessibility={this.props.importantForAccessibility} // Android

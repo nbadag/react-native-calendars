@@ -65,7 +65,8 @@ class CalendarList extends Component {
     scrollEnabled: true,
     scrollsToTop: false,
     removeClippedSubviews: Platform.OS === 'android',
-    keyExtractor: (item, index) => String(index)
+    keyExtractor: (item, index) => String(index),
+    numColumns: 1,
   }
 
   constructor(props) {
@@ -207,7 +208,7 @@ class CalendarList extends Component {
   onViewableItemsChanged({viewableItems}) {
     function rowIsCloseToViewable(index, distance) {
       for (let i = 0; i < viewableItems.length; i++) {
-        if (Math.abs(index - parseInt(viewableItems[i].index)) <= distance) {
+        if (Math.abs(index - parseInt(viewableItems[i].index - 2)) <= distance) {
           return true;
         }
       }
@@ -220,7 +221,7 @@ class CalendarList extends Component {
 
     for (let i = 0; i < rowclone.length; i++) {
       let val = rowclone[i];
-      const rowShouldBeRendered = rowIsCloseToViewable(i, 1);
+      const rowShouldBeRendered = rowIsCloseToViewable(i, 6);
 
       if (rowShouldBeRendered && !rowclone[i].getTime) {
         val = this.state.openDate.clone().addMonths(i - this.props.pastScrollRange, true);
@@ -378,12 +379,13 @@ class CalendarList extends Component {
           showsHorizontalScrollIndicator={this.props.showScrollIndicator}
           scrollEnabled={this.props.scrollEnabled}
           keyExtractor={this.props.keyExtractor}
-          initialScrollIndex={this.state.openDate ? this.getMonthIndex(this.state.openDate) : false}
+          initialScrollIndex={this.state.openDate ? this.getMonthIndex(this.state.openDate) / this.props.numColumns : false}
           getItemLayout={this.getItemLayout}
           scrollsToTop={this.props.scrollsToTop}
           onEndReachedThreshold={this.props.onEndReachedThreshold}
           onEndReached={this.props.onEndReached}
           keyboardShouldPersistTaps={this.props.keyboardShouldPersistTaps}
+          numColumns={this.props.numColumns}
         />
         {this.renderStaticHeader()}
       </View>

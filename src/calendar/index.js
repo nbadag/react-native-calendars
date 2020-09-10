@@ -15,10 +15,10 @@ import CalendarHeader from './header';
 import shouldComponentUpdate from './updater';
 import GestureRecognizer, {swipeDirections} from 'react-native-swipe-gestures';
 import {SELECT_DATE_SLOT} from '../testIDs';
-import signs from '../lib/zodiac'
+import signs, { zodiacLocale } from '../lib/zodiac'
 
 //Fallback for react-native-web or when RN version is < 0.44
-const {View, ViewPropTypes} = ReactNative;
+const {View, ViewPropTypes, TouchableWithoutFeedback} = ReactNative;
 const viewPropTypes =
   typeof document !== 'undefined'
     ? PropTypes.shape({style: PropTypes.object})
@@ -115,12 +115,7 @@ class Calendar extends Component {
 
     // @todo: genericize this
     if (props.locale === 'zodiac') {
-      XDate.locales.zodiac = {
-        ...XDate.locales[''],
-        monthNames: Object.keys(signs).map(s => s.charAt(0).toUpperCase() + s.slice(1)),
-        monthNamesShort: Object.keys(signs).map(s => s.charAt(0).toUpperCase() + s.slice(1)),
-      }
-
+      XDate.locales.zodiac = zodiacLocale
       XDate.defaultLocale = 'zodiac'
 
       const now = props.current || new Date(Date.now())
@@ -162,18 +157,23 @@ class Calendar extends Component {
   }
 
   _handleDayInteraction(date, interaction) {
-    const day = parseDate(date);
-    const minDate = parseDate(this.props.minDate);
-    const maxDate = parseDate(this.props.maxDate);
-    if (!(minDate && !dateutils.isGTE(day, minDate)) && !(maxDate && !dateutils.isLTE(day, maxDate))) {
-      const shouldUpdateMonth = this.props.disableMonthChange === undefined || !this.props.disableMonthChange;
-      if (shouldUpdateMonth) {
-        this.updateMonth(day);
-      }
-      if (interaction) {
-        interaction(xdateToData(day));
-      }
+    if (this.props.onDayPress) {
+      this.props.onDayPress(date)
     }
+    // @TODO: Why would we want this?
+
+    // const day = parseDate(date);
+    // const minDate = parseDate(this.props.minDate);
+    // const maxDate = parseDate(this.props.maxDate);
+    // if (!(minDate && !dateutils.isGTE(day, minDate)) && !(maxDate && !dateutils.isLTE(day, maxDate))) {
+    //   const shouldUpdateMonth = this.props.disableMonthChange === undefined || !this.props.disableMonthChange;
+    //   if (shouldUpdateMonth) {
+    //     this.updateMonth(day);
+    //   }
+    //   if (interaction) {
+    //     interaction(xdateToData(day));
+    //   }
+    // }
   }
 
   pressDay(date) {
@@ -452,6 +452,7 @@ class Calendar extends Component {
       renderHeader: this.props.renderHeader
     };
     const CustomHeader = this.props.customHeader;
+
     return (
       <GestureComponent {...gestureProps}>
         <View
@@ -459,6 +460,19 @@ class Calendar extends Component {
           accessibilityElementsHidden={this.props.accessibilityElementsHidden} // iOS
           importantForAccessibility={this.props.importantForAccessibility} // Android
         >
+          {this.props.onPressCalendar ? (
+            <TouchableWithoutFeedback
+              onPress={() => this.props.onPressCalendar({
+                ...this.props,
+                currentMonth,
+              })}
+            >
+              <View
+                style={this.style.calendarButton}
+              />
+            </TouchableWithoutFeedback>
+          ) : null}
+
           { CustomHeader
             ? <CustomHeader {...headerProps}/>
             : <CalendarHeader {...headerProps}/>

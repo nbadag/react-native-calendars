@@ -115,11 +115,6 @@ class ReservationList extends Component {
   }
 
   renderRow({item, index}) {
-    const isSameDateAsPrevious = this.state.reservations[index - 1] ? dateutils.sameDate(
-      new XDate(item.reservation.event_start),
-      new XDate(this.state.reservations[index - 1].reservation.event_start),
-    ) : false
-
     return (
       <View onLayout={this.onRowLayoutChange.bind(this, index)}>
         <Reservation
@@ -129,7 +124,6 @@ class ReservationList extends Component {
           renderEmptyDate={this.props.renderEmptyDate}
           theme={this.props.theme}
           rowHasChanged={this.props.rowHasChanged}
-          isSameDateAsPrevious={isSameDateAsPrevious}
         />
       </View>
     );

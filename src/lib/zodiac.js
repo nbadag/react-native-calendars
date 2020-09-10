@@ -1,3 +1,5 @@
+import XDate from 'xdate'
+
 const signs = {
   capricorn: {
     start: {
@@ -119,6 +121,13 @@ const signs = {
       day: 21,
     }
   },
+}
+
+export const zodiacLocale = {
+  ...XDate.locales[''],
+  dayNamesShort: ['S', 'M', 'T', 'W', 'T', 'F', 'S'],
+  monthNames: Object.keys(signs).map(s => s.charAt(0).toUpperCase() + s.slice(1)),
+  monthNamesShort: Object.keys(signs).map(s => s.charAt(0).toUpperCase() + s.slice(1)),
 }
 
 export default signs

@@ -128,7 +128,7 @@ class CalendarHeader extends Component {
     if (renderHeader) {
       return renderHeader(month);
     }
-    console.log(month)
+
     return (
       <Fragment>
         <Text
