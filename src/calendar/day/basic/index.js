@@ -1,9 +1,10 @@
 import React, {Component} from 'react';
-import {TouchableOpacity, Text} from 'react-native';
+import {TouchableOpacity, View, Text} from 'react-native';
 import PropTypes from 'prop-types';
 import {shouldUpdate} from '../../../component-updater';
 import Dot from '../../dot';
 import styleConstructor from './style';
+import XDate from 'xdate'
 
 
 class Day extends Component {
@@ -104,6 +105,31 @@ class Day extends Component {
         accessibilityRole={isDisabled ? undefined : 'button'}
         accessibilityLabel={this.props.accessibilityLabel}
       >
+        {this.props.date.day === 1 ? (
+          <View
+            style={{
+              position: 'absolute',
+              top: -10,
+              width: 32,
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <Text
+              style={{
+                textAlign: 'center',
+                fontSize: 6.5,
+                fontWeight: '500',
+                color: '#7a92a5',
+                textTransform: 'uppercase',
+              }}
+            >
+              {XDate.locales[''].monthNamesShort[this.props.date.month - 1]}
+            </Text>
+          </View>
+        ) : null}
+
         <Text allowFontScaling={false} style={textStyle}>{String(this.props.children)}</Text>
         <Dot
           theme={theme}
