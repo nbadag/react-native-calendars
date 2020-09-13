@@ -18,7 +18,7 @@ export default function getStyle(theme={}) {
       marginTop: 7,
       marginBottom: 7,
       flexDirection: 'row',
-      justifyContent: 'space-around'
+      justifyContent: 'space-around',
     },
     calendarButton: {
       position: 'absolute',

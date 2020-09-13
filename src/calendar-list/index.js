@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import {FlatList, Platform, Dimensions, ActivityIndicator, View} from 'react-native';
+import {FlatList, Platform, Dimensions, ActivityIndicator, View, Text} from 'react-native';
 import PropTypes from 'prop-types';
 import XDate from 'xdate';
 
@@ -246,6 +246,32 @@ class CalendarList extends Component {
 
   renderCalendar({item}) {
     let firstDay
+    let yearHeadingText
+    let shouldShowYearHeadingTextContainer = false
+
+    if (this.props.showYearHeaders) {
+      if (this.props.locale === 'zodiac') {
+        let sign = typeof item === 'string'
+          ? item.split(' ')[0].toLowerCase()
+          : dateutils.getSignName(item)
+
+        if (sign === 'capricorn') {
+          const year = typeof item === 'string'
+            ? parseInt(item.split(' ')[1], 0)
+            : item.getFullYear()
+          const month = signs[sign].start.month
+          const day = signs[sign].start.day
+          const date = new XDate(year, month, day, 0, 0, 0, true)
+
+          yearHeadingText = date.getFullYear() - 1
+          shouldShowYearHeadingTextContainer = true
+        }
+
+        if (sign === 'aquarius' || sign === 'pisces') {
+          shouldShowYearHeadingTextContainer = true
+        }
+      }
+    }
 
     if (this.props.locale === 'zodiac') {
       let year
@@ -271,16 +297,41 @@ class CalendarList extends Component {
     }
 
     return (
-      <CalendarListItem
-        testID={`${this.props.testID}_${item}`}
-        scrollToMonth={this.scrollToMonth.bind(this)}
-        item={item}
-        calendarHeight={this.props.calendarHeight}
-        calendarWidth={this.props.horizontal ? this.props.calendarWidth : undefined}
-        hideExtraDays={!this.props.locale === 'zodiac'}
-        {...this.props}
-        style={this.props.calendarStyle}
-      />
+      <View>
+        {shouldShowYearHeadingTextContainer ? (
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'flex-end',
+              paddingHorizontal: 16,
+              paddingBottom: 10,
+              height: 40,
+            }}
+          >
+            {yearHeadingText ? (
+              <Text
+                style={{
+                  fontSize: 22,
+                  fontWeight: '700',
+                }}
+              >
+                {yearHeadingText}
+              </Text>
+            ) : null}
+          </View>
+        ) : null}
+
+        <CalendarListItem
+          testID={`${this.props.testID}_${item}`}
+          scrollToMonth={this.scrollToMonth.bind(this)}
+          item={item}
+          calendarHeight={this.props.calendarHeight}
+          calendarWidth={this.props.horizontal ? this.props.calendarWidth : undefined}
+          hideExtraDays={!this.props.locale === 'zodiac'}
+          {...this.props}
+          style={this.props.calendarStyle}
+        />
+      </View>
     );
   }
 
