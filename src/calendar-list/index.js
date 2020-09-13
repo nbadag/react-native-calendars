@@ -255,7 +255,7 @@ class CalendarList extends Component {
           ? item.split(' ')[0].toLowerCase()
           : dateutils.getSignName(item)
 
-        if (sign === 'capricorn') {
+        if (sign === 'aquarius') {
           const year = typeof item === 'string'
             ? parseInt(item.split(' ')[1], 0)
             : item.getFullYear()
@@ -263,11 +263,11 @@ class CalendarList extends Component {
           const day = signs[sign].start.day
           const date = new XDate(year, month, day, 0, 0, 0, true)
 
-          yearHeadingText = date.getFullYear() - 1
+          yearHeadingText = date.getFullYear()
           shouldShowYearHeadingTextContainer = true
         }
 
-        if (sign === 'aquarius' || sign === 'pisces') {
+        if (sign === 'capricorn' || sign === 'pisces') {
           shouldShowYearHeadingTextContainer = true
         }
       }
@@ -303,6 +303,7 @@ class CalendarList extends Component {
             style={{
               flexDirection: 'row',
               alignItems: 'flex-end',
+              justifyContent: 'center',
               paddingHorizontal: 16,
               paddingBottom: 10,
               height: 40,
