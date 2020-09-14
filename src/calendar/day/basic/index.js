@@ -114,6 +114,7 @@ class Day extends Component {
               flexDirection: 'row',
               alignItems: 'center',
               justifyContent: 'center',
+              ...this.props.zodiacMonthMarkerStyle,
             }}
           >
             <Text
@@ -123,6 +124,7 @@ class Day extends Component {
                 fontWeight: '500',
                 color: '#7a92a5',
                 textTransform: 'uppercase',
+                ...this.props.zodiacMonthMarkerTextStyle,
               }}
             >
               {XDate.locales[''].monthNamesShort[this.props.date.month - 1]}

@@ -282,6 +282,8 @@ class Calendar extends Component {
           accessibilityLabel={accessibilityLabel}
           disableAllTouchEventsForDisabledDays={this.props.disableAllTouchEventsForDisabledDays}
           locale={this.props.locale}
+          zodiacMonthMarkerStyle={this.props.zodiacMonthMarkerStyle}
+          zodiacMonthMarkerTextStyle={this.props.zodiacMonthMarkerTextStyle}
         >
           {date}
         </DayComp>
