@@ -52,7 +52,15 @@ function sameDate(a, b, locale) {
     a.getDate() === b.getDate();
 }
 
-function getSignName(xd) {
+function getSignName(date) {
+  let xd
+
+  if (typeof date === 'string') {
+    xd = new XDate(date)
+  } else {
+    xd = date
+  }
+
   const signNames = Object.keys(signs)
   let signName
 
