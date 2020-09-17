@@ -1,3 +1,4 @@
+const moment = require('moment');
 const XDate = require('xdate');
 const signs = require('./lib/zodiac').default;
 
@@ -8,51 +9,40 @@ function sameMonth(a, b) {
     a.getMonth() === b.getMonth();
 }
 
-function sameSign(a, b) {
+function sameSign(a, b, transits) {
   const signNames = Object.keys(signs)
   let aSign
   let bSign
 
-  for (let i = 0; i < signNames.length; i++) {
-    const sign = signs[signNames[i]]
+  const transitA = transits.find((t) => {
+    const m = moment(a.toISOString())
+    return m.isSameOrAfter(t.Start) && m.isBefore(t.End)
+  })
 
-    if (
-      ((a.getMonth() + 1) === sign.start.month && a.getDate() >= sign.start.day)
-      ||
-      ((a.getMonth() + 1) === sign.end.month && a.getDate() <= sign.end.day)
-    ) {
-      aSign = signNames[i]
-    }
-  }
+  const transitB = transits.find((t) => {
+    const m = moment(a.toISOString())
+    return m.isSameOrAfter(t.Start) && m.isBefore(t.End)
+  })
 
-  for (let j = 0; j < signNames.length; j++) {
-    const sign = signs[signNames[j]]
-
-    if (
-      ((b.getMonth() + 1) === sign.start.month && b.getDate() >= sign.start.day)
-      ||
-      ((b.getMonth() + 1) === sign.end.month && b.getDate() <= sign.end.day)
-    ) {
-      bSign = signNames[j]
-    }
-  }
+  aSign = transitA['Sign Change']
+  bSign = transitB['Sign Change']
 
   return a instanceof XDate && b instanceof XDate &&
     aSign === bSign
 }
 
 // @todo?
-function sameDate(a, b, locale) {
+function sameDate(a, b, locale, transits) {
   const func = locale === 'zodiac'
     ? sameSign
     : sameMonth
 
   return a instanceof XDate && b instanceof XDate &&
-    func(a, b) &&
+    func(a, b, transits) &&
     a.getDate() === b.getDate();
 }
 
-function getSignName(date) {
+function getSignName(date, transits) {
   let xd
 
   if (typeof date === 'string') {
@@ -61,22 +51,12 @@ function getSignName(date) {
     xd = date
   }
 
-  const signNames = Object.keys(signs)
-  let signName
+  const transit = transits.find((t) => {
+    const m = moment(xd.toISOString())
+    return m.isSameOrAfter(t.Start) && m.isBefore(t.End)
+  })
 
-  for (let i = 0; i < signNames.length; i++) {
-    const sign = signs[signNames[i]]
-
-    if (
-      ((xd.getMonth() + 1) === sign.start.month && xd.getDate() >= sign.start.day)
-      ||
-      ((xd.getMonth() + 1) === sign.end.month && xd.getDate() <= sign.end.day)
-    ) {
-      signName = signNames[i]
-    }
-  }
-
-  return signName
+  return transit['Sign Change'].toLowerCase()
 }
 
 function isGTE(a, b) {
@@ -106,31 +86,21 @@ function month(xd) {
   return fromTo(firstDay, lastDay);
 }
 
-function sign(xd) {
-  const signNames = Object.keys(signs)
-  let sign
+function sign(date, transits) {
+  let xd
 
-  for (let s = 0; s < Object.keys(signs).length; s++) {
-    const month = xd.getMonth() + 1
-    const date = xd.getDate()
-
-    const start = signs[signNames[s]].start
-    const end = signs[signNames[s]].end
-
-    if (
-      (month === start.month && date >= start.day)
-      ||
-      (month === end.month && date <= end.day)
-    ) {
-      sign = signs[signNames[s]]
-    }
+  if (typeof date === 'string') {
+    xd = new XDate(date)
+  } else {
+    xd = date
   }
 
-  const year = xd.getFullYear()
-  const firstDay = new XDate(sign.start.month === 12 ? year - 1 : year, sign.start.month - 1, sign.start.day, 0, 0, 0, true)
-  const lastDay = new XDate(year, sign.end.month - 1, sign.end.day, 0, 0, 0, true)
+  const transit = transits.find((t) => {
+    const m = moment(xd.toISOString())
+    return m.isSameOrAfter(t.Start) && m.isBefore(t.End)
+  })
 
-  return fromTo(firstDay, lastDay)
+  return fromTo(transit.Start, transit.End)
 }
 
 function weekDayNames(firstDayOfWeek = 0) {
@@ -142,8 +112,8 @@ function weekDayNames(firstDayOfWeek = 0) {
   return weekDaysNames;
 }
 
-function page(xd, firstDayOfWeek, showSixWeeks, locale) {
-  const days = locale === 'zodiac' ? sign(xd) : month(xd);
+function page(xd, firstDayOfWeek, showSixWeeks, locale, transits) {
+  const days = locale === 'zodiac' ? sign(xd, transits) : month(xd);
 
   let before = [], after = [];
 

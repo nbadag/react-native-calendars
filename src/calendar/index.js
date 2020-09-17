@@ -223,10 +223,10 @@ class Calendar extends Component {
   renderDay(day, id) {
     let minDate
     let maxDate
-    const days = dateutils.sign(day)
+    const days = dateutils.sign(day, this.props.transits)
 
     if (this.props.locale === 'zodiac') {
-      const days = dateutils.sign(day)
+      const days = dateutils.sign(day, this.props.transits)
 
       minDate = parseDate(days[0])
       maxDate = parseDate(days[days.length - 1])
@@ -246,7 +246,7 @@ class Calendar extends Component {
       //   console.log(day, 'disabled-2', minDate, maxDate, day)
       // }
       state = 'disabled';
-    } else if (this.props.locale === 'zodiac' && !dateutils.sameSign(day, this.state.currentMonth)) {
+    } else if (this.props.locale === 'zodiac' && !dateutils.sameSign(day, this.state.currentMonth, this.props.transits)) {
       // if (day.getMonth() === 11) {
       //   console.log(day, 'disabled-3', dateutils.getSignName(day), dateutils.getSignName(this.state.currentMonth))
       // }
@@ -256,7 +256,7 @@ class Calendar extends Component {
       //   console.log(day, 'disabled-4')
       // }
       state = 'disabled';
-    } else if (dateutils.sameDate(day, XDate(), this.props.locale)) {
+    } else if (dateutils.sameDate(day, XDate(), this.props.locale, this.props.transits)) {
       state = 'today';
     }
 
@@ -408,7 +408,7 @@ class Calendar extends Component {
     const {currentMonth} = this.state;
     const {firstDay, showSixWeeks, hideExtraDays, enableSwipeMonths, locale} = this.props;
     const shouldShowSixWeeks = showSixWeeks && !hideExtraDays;
-    const days = dateutils.page(currentMonth, firstDay, shouldShowSixWeeks, locale);
+    const days = dateutils.page(currentMonth, firstDay, shouldShowSixWeeks, locale, this.props.transits);
 
     const weeks = [];
     while (days.length) {
@@ -434,7 +434,7 @@ class Calendar extends Component {
       style: this.props.headerStyle,
       theme: this.props.theme,
       hideArrows: this.props.hideArrows,
-      month: this.props.locale === 'zodiac' && dateutils.getSignName(this.state.currentMonth) === 'capricorn' && this.state.currentMonth.getMonth() === 0
+      month: this.props.locale === 'zodiac' && dateutils.getSignName(this.state.currentMonth, this.props.transits) === 'capricorn' && this.state.currentMonth.getMonth() === 0
         ? this.state.currentMonth.clone().setFullYear(this.state.currentMonth.getFullYear() - 1)
         : this.state.currentMonth,
       addMonth: this.addMonth,

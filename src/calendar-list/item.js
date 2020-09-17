@@ -57,7 +57,9 @@ class CalendarListItem extends Component {
     const row = this.props.item;
 
     if (row.getTime) {
-      return (
+      return this.props.renderCalendarListItem ? (
+        this.props.renderCalendarListItem(row, this.props)
+      ) : (
         <Calendar
           testID={`${this.props.testID}_${row}`}
           theme={this.props.theme}
@@ -95,7 +97,9 @@ class CalendarListItem extends Component {
     } else {
       const text = row.toString();
 
-      return (
+      return this.props.renderCalendarListItemLoading ? (
+        this.props.renderCalendarListItemLoading(row, this.props)
+      ) : (
         <View style={[{height: this.props.calendarHeight, width: this.props.calendarWidth}, this.style.placeholder]}>
           <Text allowFontScaling={false} style={this.style.placeholderText}>{text}</Text>
         </View>

@@ -143,8 +143,8 @@ class CalendarList extends Component {
 
     if (this.props.locale === 'zodiac') {
       const signNames = Object.keys(signs)
-      const openDateSignIdx = signNames.indexOf(dateutils.getSignName(this.state.openDate))
-      const targetDateSignIdx = signNames.indexOf(dateutils.getSignName(day))
+      const openDateSignIdx = signNames.indexOf(dateutils.getSignName(this.state.openDate, this.props.transits))
+      const targetDateSignIdx = signNames.indexOf(dateutils.getSignName(day, this.props.transits))
 
       diffMonths = targetDateSignIdx - openDateSignIdx
     } else {
@@ -156,7 +156,7 @@ class CalendarList extends Component {
 
     if (!this.props.horizontal) {
       let week = 0;
-      const days = this.props.locale === 'zodiac' ? dateutils.sign(day) : dateutils.page(day, this.props.firstDay);
+      const days = this.props.locale === 'zodiac' ? dateutils.sign(day, this.props.transits) : dateutils.page(day, this.props.firstDay);
 
       for (let i = 0; i < days.length; i++) {
         week = Math.floor(i / 7);
@@ -253,7 +253,7 @@ class CalendarList extends Component {
       if (this.props.locale === 'zodiac') {
         let sign = typeof item === 'string'
           ? item.split(' ')[0].toLowerCase()
-          : dateutils.getSignName(item)
+          : dateutils.getSignName(item, this.props.transits)
 
         if (sign === 'aquarius') {
           const year = typeof item === 'string'
@@ -286,7 +286,7 @@ class CalendarList extends Component {
         month = signs[signName].start.month
         day = signs[signName].start.day
       } else {
-        const sign = dateutils.sign(item)
+        const sign = dateutils.sign(item, this.props.transits)
 
         year = sign[0].getFullYear()
         month = sign[0].getMonth()
