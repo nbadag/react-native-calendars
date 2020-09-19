@@ -188,13 +188,11 @@ class Calendar extends Component {
     this.updateMonth(this.state.currentMonth.clone().addMonths(count, true));
   }
 
-  isDateNotInTheRange = (rawMinDate, maxDate, date, locale) => {
-    let minDate = locale === 'zodiac' ? null : rawMinDate
-
+  isDateNotInTheRange = (minDate, maxDate, date, locale) => {
     if (
       locale === 'zodiac'
       &&
-      rawMinDate.getMonth() === 11
+      minDate.getMonth() === 11
       &&
       date.getMonth() === 11
       &&
@@ -223,10 +221,10 @@ class Calendar extends Component {
   renderDay(day, id) {
     let minDate
     let maxDate
-    const days = dateutils.sign(day, this.props.transits)
+    const days = dateutils.sign(this.state.currentMonth, this.props.transits)
 
     if (this.props.locale === 'zodiac') {
-      const days = dateutils.sign(day, this.props.transits)
+      const days = dateutils.sign(this.state.currentMonth, this.props.transits)
 
       minDate = parseDate(days[0])
       maxDate = parseDate(days[days.length - 1])
@@ -238,22 +236,22 @@ class Calendar extends Component {
     let state = '';
     if (this.props.disabledByDefault) {
       // if (day.getMonth() === 11) {
-      //   console.log(day, 'disabled-1')
+        // console.log(day, 'disabled-1')
       // }
       state = 'disabled';
     } else if (this.isDateNotInTheRange(minDate, maxDate, day, this.props.locale)) {
       // if (day.getMonth() === 11) {
-      //   console.log(day, 'disabled-2', minDate, maxDate, day)
+        // console.log('disabled-2', day, minDate, maxDate, day)
       // }
       state = 'disabled';
     } else if (this.props.locale === 'zodiac' && !dateutils.sameSign(day, this.state.currentMonth, this.props.transits)) {
       // if (day.getMonth() === 11) {
-      //   console.log(day, 'disabled-3', dateutils.getSignName(day), dateutils.getSignName(this.state.currentMonth))
+        // console.log(day, 'disabled-3')
       // }
       state = 'disabled';
     } else if (this.props.locale !== 'zodiac' && !dateutils.sameMonth(day, this.state.currentMonth)) {
       // if (day.getMonth() === 11) {
-      //   console.log(day, 'disabled-4')
+        // console.log(day, 'disabled-4')
       // }
       state = 'disabled';
     } else if (dateutils.sameDate(day, XDate(), this.props.locale, this.props.transits)) {

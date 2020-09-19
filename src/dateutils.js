@@ -67,12 +67,17 @@ function isLTE(a, b) {
   return a.diffDays(b) > -1;
 }
 
-function fromTo(a, b) {
+function fromTo(a, b, debugFlag) {
   const days = [];
   let from = +a, to = +b;
-  for (; from <= to; from = new XDate(from, true).addDays(1).getTime()) {
-    days.push(new XDate(from, true));
+
+  for (; from <= to; from = new XDate(from).addDays(1).getTime()) {
+    days.push(new XDate(from));
   }
+
+  // if (debugFlag === 'month') {
+  //   console.log(days)
+  // }
   return days;
 }
 
@@ -86,7 +91,7 @@ function month(xd) {
   return fromTo(firstDay, lastDay);
 }
 
-function sign(date, transits) {
+function sign(date, transits, debugFlag) {
   let xd
 
   if (typeof date === 'string') {
@@ -100,7 +105,17 @@ function sign(date, transits) {
     return m.isSameOrAfter(t.Start) && m.isBefore(t.End)
   })
 
-  return fromTo(transit.Start, transit.End)
+  const days = fromTo(transit.Start, transit.End, debugFlag)
+
+  if (transits[transits.indexOf(transit) - 1] && days[days.length - 1].getDate() === transits[transits.indexOf(transit) - 1].End.getDate()) {
+    days.unshift()
+  }
+
+  if (transits[transits.indexOf(transit) + 1] && days[days.length - 1].getDate() === transits[transits.indexOf(transit) + 1].Start.getDate()) {
+    days.pop()
+  }
+
+  return days
 }
 
 function weekDayNames(firstDayOfWeek = 0) {
@@ -112,8 +127,8 @@ function weekDayNames(firstDayOfWeek = 0) {
   return weekDaysNames;
 }
 
-function page(xd, firstDayOfWeek, showSixWeeks, locale, transits) {
-  const days = locale === 'zodiac' ? sign(xd, transits) : month(xd);
+function page(xd, firstDayOfWeek, showSixWeeks, locale, transits, debugFlag) {
+  const days = locale === 'zodiac' ? sign(xd, transits, debugFlag) : month(xd);
 
   let before = [], after = [];
 
