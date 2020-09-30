@@ -7,6 +7,7 @@ import styleConstructor from './style';
 import {weekDayNames} from '../../dateutils';
 import {CHANGE_MONTH_LEFT_ARROW, CHANGE_MONTH_RIGHT_ARROW, HEADER_MONTH_NAME} from '../../testIDs';
 import _ from 'lodash';
+import dateutils from '../../dateutils';
 
 
 class CalendarHeader extends Component {
@@ -123,6 +124,7 @@ class CalendarHeader extends Component {
 
   renderHeader = () => {
     const {renderHeader, month, monthFormat, testID} = this.props;
+    const signName = dateutils.getSignName(month, this.props.transits)
     const webProps = Platform.OS === 'web' ? {'aria-level': this.props.webAriaLevel} : {};
 
     if (renderHeader) {
@@ -137,7 +139,7 @@ class CalendarHeader extends Component {
           testID={testID ? `${HEADER_MONTH_NAME}-${testID}`: HEADER_MONTH_NAME}
           {...webProps}
         >
-          {month.toString(monthFormat)}
+          {_.capitalize(signName)} {month.toString('yyyy')}
         </Text>
       </Fragment>
     );

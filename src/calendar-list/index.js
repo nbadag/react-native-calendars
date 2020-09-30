@@ -74,26 +74,6 @@ class CalendarList extends Component {
 
     let date = XDate()
 
-    // @todo: genericize this
-    if (props.locale === 'zodiac') {
-      XDate.locales.zodiac = {
-        ...XDate.locales[''],
-        monthNames: Object.keys(signs).map(s => s.charAt(0).toUpperCase() + s.slice(1)),
-        monthNamesShort: Object.keys(signs).map(s => s.charAt(0).toUpperCase() + s.slice(1)),
-      }
-
-      XDate.defaultLocale = 'zodiac'
-
-      const now = new Date(Date.now())
-      const year = now.getFullYear()
-      const month = now.getMonth() - 1 >= 0
-        ? now.getMonth()
-        : 12
-      const day = now.getDate()
-
-      date = new XDate(year, month, day, 0, 0, 0, true)
-    }
-
     this.style = styleConstructor(props.theme);
 
     this.viewabilityConfig = {
@@ -103,10 +83,15 @@ class CalendarList extends Component {
     const rows = [];
     const texts = [];
 
-    for (let i = 0; i <= this.props.pastScrollRange + this.props.futureScrollRange; i++) {
-      const rangeDate = date.clone().addMonths(i - this.props.pastScrollRange, true);
+    for (let i = -1; i <= this.props.pastScrollRange + this.props.futureScrollRange; i++) {
+      let rangeDate = date.clone().addMonths(i - this.props.pastScrollRange, true);
+      const sign = dateutils.sign(rangeDate, this.props.transits)
       const rangeDateStr = rangeDate.toString('MMM yyyy');
       texts.push(rangeDateStr);
+
+      if (rangeDate.getMonth() === 11 && rangeDate.getDate() >= sign[0].getDate()) {
+        rangeDate = new XDate(rangeDate.getFullYear() + 1, 0, 1, 0,0,0)
+      }
       /*
        * This selects range around current shown month [-0, +2] or [-1, +1] month for detail calendar rendering.
        * If `this.pastScrollRange` is `undefined` it's equal to `false` or 0 in next condition.
@@ -221,13 +206,31 @@ class CalendarList extends Component {
 
     for (let i = 0; i < rowclone.length; i++) {
       let val = rowclone[i];
+
+      if (val.getMonth && val.getMonth() === 11) {
+        const sign = dateutils.sign(val, this.props.transits)
+
+        if (val.getDay() >= sign[0].getDay()) {
+          val = XDate(val.getFullYear() + 1, 0, 1, 0,0,0, true)
+        }
+      }
+
       const rowShouldBeRendered = rowIsCloseToViewable(i, 6);
 
       if (rowShouldBeRendered && !rowclone[i].getTime) {
-        val = this.state.openDate.clone().addMonths(i - this.props.pastScrollRange, true);
+        val = this.state.openDate.clone().addMonths(i - this.props.pastScrollRange - 1, true);
+
+        if (val.getMonth() === 11) {
+          const sign = dateutils.sign(val, this.props.transits)
+
+          if (val.getDay() >= sign[0].getDay()) {
+            val = XDate(val.getFullYear() + 1, 0, 1, 0,0,0, true)
+          }
+        }
       } else if (!rowShouldBeRendered) {
         val = this.state.texts[i];
       }
+
       newrows.push(val);
       if (rowIsCloseToViewable(i, 0)) {
         visibleMonths.push(xdateToData(val));
@@ -245,7 +248,7 @@ class CalendarList extends Component {
   }
 
   renderCalendar({item}) {
-    let firstDay
+    let itemOverride
     let yearHeadingText
     let shouldShowYearHeadingTextContainer = false
 
@@ -261,7 +264,7 @@ class CalendarList extends Component {
             : item.getFullYear()
           const month = signs[sign].start.month
           const day = signs[sign].start.day
-          const date = new XDate(year, month, day, 0, 0, 0, true)
+          const date = new XDate(year, month, day, 0, 0, 0)
 
           yearHeadingText = date.getFullYear()
           shouldShowYearHeadingTextContainer = true
@@ -273,28 +276,7 @@ class CalendarList extends Component {
       }
     }
 
-    if (this.props.locale === 'zodiac') {
-      let year
-      let month
-      let day
-
-      if (typeof item === 'string') {
-        const text = item.split(' ')
-        const signName = text[0].toLowerCase()
-
-        year = parseInt(text[1])
-        month = signs[signName].start.month
-        day = signs[signName].start.day
-      } else {
-        const sign = dateutils.sign(item, this.props.transits)
-
-        year = sign[0].getFullYear()
-        month = sign[0].getMonth()
-        day = sign[0].getDate()
-      }
-
-      firstDay = new XDate(year, month, day, 0, 0, 0, true)
-    }
+    const currentItem = itemOverride || item
 
     return (
       <View>
@@ -325,7 +307,7 @@ class CalendarList extends Component {
         <CalendarListItem
           testID={`${this.props.testID}_${item}`}
           scrollToMonth={this.scrollToMonth.bind(this)}
-          item={item}
+          item={currentItem}
           calendarHeight={this.props.calendarHeight}
           calendarWidth={this.props.horizontal ? this.props.calendarWidth : undefined}
           hideExtraDays={!this.props.locale === 'zodiac'}

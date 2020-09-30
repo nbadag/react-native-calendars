@@ -11,24 +11,10 @@ function sameMonth(a, b) {
 
 function sameSign(a, b, transits) {
   const signNames = Object.keys(signs)
-  let aSign
-  let bSign
+  const aSign = getSignName(a, transits)
+  let bSign = getSignName(b, transits)
 
-  const transitA = transits.find((t) => {
-    const m = moment(a.toISOString())
-    return m.isSameOrAfter(t.Start) && m.isBefore(t.End)
-  })
-
-  const transitB = transits.find((t) => {
-    const m = moment(a.toISOString())
-    return m.isSameOrAfter(t.Start) && m.isBefore(t.End)
-  })
-
-  aSign = transitA['Sign Change']
-  bSign = transitB['Sign Change']
-
-  return a instanceof XDate && b instanceof XDate &&
-    aSign === bSign
+  return aSign === bSign
 }
 
 // @todo?
@@ -51,12 +37,65 @@ function getSignName(date, transits) {
     xd = date
   }
 
-  const transit = transits.find((t) => {
-    const m = moment(xd.toISOString())
-    return m.isSameOrAfter(t.Start) && m.isBefore(t.End)
+  const year = xd.getFullYear()
+  const zodiac = transits[year.toString()]
+  let sign
+
+  Object.keys(zodiac).forEach((signId) => {
+    const date = moment(xd.toISOString())
+    const start = new Date(zodiac[signId].startUTC).toISOString()
+    const end = new Date(zodiac[signId].endUTC).toISOString()
+
+    if (date.isSameOrAfter(start) && date.isSameOrBefore(end)) {
+      sign = zodiac[signId]
+    }
   })
 
-  return transit['Sign Change'].toLowerCase()
+  if (!sign && xd.getMonth() === 11) {
+    sign = transits[(year + 1).toString()]['CP']
+  } else if (!sign) {
+    Object.keys(zodiac).forEach((signId) => {
+      const nextDay = moment(xd.toISOString()).add(24, 'hours')
+      const start = new Date(zodiac[signId].startUTC).toISOString()
+      const end = new Date(zodiac[signId].endUTC).toISOString()
+
+      if (nextDay.isSameOrAfter(start) && nextDay.isSameOrBefore(end)) {
+        sign = zodiac[signId]
+      }
+    })
+  }
+
+  return sign ? sign.name.toLowerCase() : null
+}
+
+function getSignId(date, transits) {
+  let xd
+
+  if (typeof date === 'string') {
+    xd = new XDate(date)
+  } else {
+    xd = date
+  }
+
+  const year = xd.getFullYear()
+  const zodiac = transits[year.toString()]
+  let sign
+
+  Object.keys(zodiac).forEach((signId) => {
+    const date = moment(xd.toISOString())
+    const start = new Date(zodiac[signId].startUTC).toISOString()
+    const end = new Date(zodiac[signId].endUTC).toISOString()
+
+    if (date.isSameOrAfter(start) && date.isSameOrBefore(end)) {
+      sign = zodiac[signId]
+    }
+  })
+
+  if (!sign) {
+    sign = transits[(year + 1).toString()]['CP']
+  }
+
+  return sign ? sign.id : null
 }
 
 function isGTE(a, b) {
@@ -100,22 +139,27 @@ function sign(date, transits, debugFlag) {
     xd = date
   }
 
-  const transit = transits.find((t) => {
-    const m = moment(xd.toISOString())
-    return m.isSameOrAfter(t.Start) && m.isBefore(t.End)
+  const year = xd.getFullYear()
+  const zodiac = transits[year.toString()]
+  let sign
+
+  Object.keys(zodiac).forEach((signId) => {
+    const date = moment(xd.toISOString())
+    const start = new Date(zodiac[signId].startUTC).toISOString()
+    const end = new Date(zodiac[signId].endUTC).toISOString()
+
+    if (date.isSameOrAfter(start) && date.isSameOrBefore(end)) {
+      sign = zodiac[signId]
+    }
   })
 
-  const days = fromTo(transit.Start, transit.End, debugFlag)
-
-  if (transits[transits.indexOf(transit) - 1] && days[days.length - 1].getDate() === transits[transits.indexOf(transit) - 1].End.getDate()) {
-    days.unshift()
+  if (!sign) {
+    sign = transits[(year + 1).toString()]['CP']
   }
 
-  if (transits[transits.indexOf(transit) + 1] && days[days.length - 1].getDate() === transits[transits.indexOf(transit) + 1].Start.getDate()) {
-    days.pop()
-  }
+  const days = sign ? sign.days : []
 
-  return days
+  return days.map((day) => new Date(day))
 }
 
 function weekDayNames(firstDayOfWeek = 0) {
@@ -128,7 +172,14 @@ function weekDayNames(firstDayOfWeek = 0) {
 }
 
 function page(xd, firstDayOfWeek, showSixWeeks, locale, transits, debugFlag) {
-  const days = locale === 'zodiac' ? sign(xd, transits, debugFlag) : month(xd);
+  const rawDays = locale === 'zodiac' ? sign(xd, transits, debugFlag) : month(xd);
+  let xdays
+
+  if (locale === 'zodiac') {
+    xdays = rawDays.map((d) => new XDate(d.toISOString()))
+  }
+
+  const days = xdays || rawDays
 
   let before = [], after = [];
 
@@ -172,6 +223,7 @@ module.exports = {
   sameMonth,
   sameSign,
   sameDate,
+  getSignId,
   getSignName,
   sign,
   month,

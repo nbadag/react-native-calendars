@@ -114,19 +114,19 @@ class Calendar extends Component {
     let currentMonth = props.current || XDate()
 
     // @todo: genericize this
-    if (props.locale === 'zodiac') {
-      XDate.locales.zodiac = zodiacLocale
-      XDate.defaultLocale = 'zodiac'
-
-      const now = props.current || new Date(Date.now())
-      const year = now.getFullYear()
-      const month = now.getMonth() - 1 >= 0
-        ? now.getMonth()
-        : 12
-      const day = now.getDate()
-
-      currentMonth = new XDate(year, month, day, 0, 0, 0, true)
-    }
+    // if (props.locale === 'zodiac') {
+    //   XDate.locales.zodiac = zodiacLocale
+    //   XDate.defaultLocale = 'zodiac'
+    //
+    //   const now = props.current || new Date(Date.now())
+    //   const year = now.getFullYear()
+    //   const month = now.getMonth() - 1 >= 0
+    //     ? now.getMonth()
+    //     : 12
+    //   const day = now.getDate()
+    //
+    //   currentMonth = new XDate(year, month, day, 0, 0, 0, true)
+    // }
 
     this.style = styleConstructor(this.props.theme);
     this.state = { currentMonth };
@@ -199,9 +199,17 @@ class Calendar extends Component {
       date.getFullYear() === maxDate.getFullYear()
     ) {
       date.setFullYear(date.getFullYear() - 1)
-    }
 
-    return (minDate && !dateutils.isGTE(date, minDate)) || (maxDate && !dateutils.isLTE(date, maxDate));
+      const days = dateutils.sign(date, this.props.transits)
+
+      return !days.find((signDate) => {
+        return (
+          signDate.getMonth() === date.getMonth() && signDate.getDate() === date.getDate()
+        )
+      })
+    } else {
+      return (minDate && !dateutils.isGTE(date, minDate)) || (maxDate && !dateutils.isLTE(date, maxDate));
+    }
   }
 
   getAccessibilityLabel = (state, day) => {
@@ -236,7 +244,7 @@ class Calendar extends Component {
     let state = '';
     if (this.props.disabledByDefault) {
       // if (day.getMonth() === 11) {
-        // console.log(day, 'disabled-1')
+        console.log(day, 'disabled-1')
       // }
       state = 'disabled';
     } else if (this.isDateNotInTheRange(minDate, maxDate, day, this.props.locale)) {
@@ -246,7 +254,7 @@ class Calendar extends Component {
       state = 'disabled';
     } else if (this.props.locale === 'zodiac' && !dateutils.sameSign(day, this.state.currentMonth, this.props.transits)) {
       // if (day.getMonth() === 11) {
-        // console.log(day, 'disabled-3')
+        // console.log(day, 'disabled-3', day, this.state.currentMonth)
       // }
       state = 'disabled';
     } else if (this.props.locale !== 'zodiac' && !dateutils.sameMonth(day, this.state.currentMonth)) {
@@ -406,6 +414,7 @@ class Calendar extends Component {
     const {currentMonth} = this.state;
     const {firstDay, showSixWeeks, hideExtraDays, enableSwipeMonths, locale} = this.props;
     const shouldShowSixWeeks = showSixWeeks && !hideExtraDays;
+    const signName = dateutils.getSignName(this.props.current, this.props.transits)
     const days = dateutils.page(currentMonth, firstDay, shouldShowSixWeeks, locale, this.props.transits);
 
     const weeks = [];
@@ -432,9 +441,7 @@ class Calendar extends Component {
       style: this.props.headerStyle,
       theme: this.props.theme,
       hideArrows: this.props.hideArrows,
-      month: this.props.locale === 'zodiac' && dateutils.getSignName(this.state.currentMonth, this.props.transits) === 'capricorn' && this.state.currentMonth.getMonth() === 0
-        ? this.state.currentMonth.clone().setFullYear(this.state.currentMonth.getFullYear() - 1)
-        : this.state.currentMonth,
+      month: this.state.currentMonth,
       addMonth: this.addMonth,
       showIndicator: indicator,
       firstDay: this.props.firstDay,
@@ -449,7 +456,8 @@ class Calendar extends Component {
       disableArrowLeft: this.props.disableArrowLeft,
       disableArrowRight: this.props.disableArrowRight,
       disabledDaysIndexes: this.props.disabledDaysIndexes,
-      renderHeader: this.props.renderHeader
+      renderHeader: this.props.renderHeader,
+      transits: this.props.transits,
     };
     const CustomHeader = this.props.customHeader;
 
