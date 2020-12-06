@@ -111,7 +111,9 @@ class Calendar extends Component {
   constructor(props) {
     super(props);
 
-    let currentMonth = props.current || XDate()
+    let currentMonth = typeof props.current === 'string'
+      ? new XDate(props.current)
+      : props.current || XDate()
 
     // @todo: genericize this
     // if (props.locale === 'zodiac') {
